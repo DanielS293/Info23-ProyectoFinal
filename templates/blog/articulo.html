@@ -1,0 +1,113 @@
+{% extends 'blog/base.html' %}
+
+{% load static %}
+
+{% block contenido %}
+
+<article class="blog-post">
+  <section class="col-auto d-none d-lg-block">
+    <img src= {{ articulo.imagen.url }} class="img-fluid" alt="" />
+  </section>
+
+  <strong class="d-inline-block mb-2 mt-3 text-primary"><a href= {% url 'categoria' categoria_slug=articulo.categoria.slug %} >{{ articulo.categoria }}</a></strong>
+  <h2 class="blog-post-title mb-1">{{ articulo.titulo }}</h2>
+  <p class="blog-post-meta">{{ articulo.creacion|date:'d F Y'|capfirst }} por <a href= {% url 'autor' autor=articulo.autor%} >{{ articulo.autor }}</a></p>
+
+  <p class="lead my-3">{{ articulo.bajada }}</p>
+  <hr>
+  <p>{{ articulo.contenido|safe }}</p>
+
+  <hr>
+
+  <strong>Etiquetas:</strong>
+  {% for etiqueta in articulo.etiquetas.all %}
+    <span class="badge text-bg-dark">{{etiqueta.nombre|upper}}</span>
+  {% endfor %}
+</article>
+
+<section class="my-3 mt-5 mb-5">
+  <a class="btn btn-dark rounded-pill" href={% url 'inicio' %}>Volver al Inicio</a>
+  {% if request.user == articulo.autor or request.user.is_superuser %}
+    <section class='float-end'>
+      <a class="btn btn-dark rounded-pill" href={% url 'actualizar_articulo' articulo_slug=articulo.slug %}>Editar</a>
+      <a class="btn btn-dark rounded-pill" href={% url 'eliminar_articulo' articulo_slug=articulo.slug %}>Eliminar</a>
+  </section>
+  {% endif %} 
+</section>
+
+<!-- Comentarios -->
+  
+<section>
+  <div class="card">
+
+    {% if not articulo.comentarios.all %}
+    
+    <div class="card-body">
+      <div class="d-flex justify-content-center">
+        <div>
+          <p class="text-muted small mb-0">Aún no hay comentarios</p>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+
+    {% for comentario in articulo.comentarios.all %}
+
+    <div class="card-body">
+      <div class="d-flex flex-start align-items-center">
+        <div>
+          <h6 class="fw-bold text-primary mb-1">{{ comentario.usuario }}</h6>
+          <p class="text-muted small mb-0">{{ comentario.fecha }}</p>
+        </div>
+      </div>
+
+      <p class="mt-3 mb-4 pb-2">{{ comentario.texto }}</p>
+    </div>
+
+    {% endfor %}
+
+    {% endif %}
+
+    <div class="card-footer py-3 border-0" style="background-color: #f8f9fa;">
+
+      {% if user.is_authenticated %}
+
+      <form method="post" action="#">
+        {% csrf_token %}
+        <div class="d-flex flex-start w-100">
+          <div class="form-outline w-100">
+            <textarea id="comment" class="form-control" id="textAreaComentario" rows="4" style="background: #fff;"></textarea>
+            <label class="form-label" for="textAreaComentario">Mensaje</label>
+          </div>
+        </div>
+        <div class="float-end mt-2 pt-1">
+          <button type="submit" class="btn btn-primary btn-sm">Enviar comentario</button>
+          <button type="button" onclick="clearContent();" class="btn btn-outline-primary btn-sm">Cancelar</button>
+        </div>
+      </form>
+
+      {% else %}
+
+      <div class="d-flex justify-content-center">
+        <p class="text-muted small mb-0">Inicia sesión para dejar un comentario</p>
+      </div>
+
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+
+</br>
+
+<script type="text/javascript">
+    function clearContent()
+  {
+      document.getElementById("comment").value='';
+  }
+</script>
+
+
+{% endblock contenido %}
+
